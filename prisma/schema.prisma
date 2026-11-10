@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Profile {
+  id               String   @id @default("main_profile")
+  fullName         String   @default("Chamoth Bandara")
+  title            String   @default("Junior Data Analyst | Power BI Developer | Data Analytics Enthusiast")
+  headline         String   @default("Transforming Data Into Meaningful Insights and Smarter Decisions.")
+  bio              String   @default("")
+  summary          String   @default("")
+  avatarUrl        String   @default("/uploads/chamoth_profile.jpg")
+  email            String   @default("pamithabandara123@gmail.com")
+  phone            String   @default("+94 71 929 9354")
+  location         String   @default("Thulhiriya / Colombo, Sri Lanka")
+  availability     String   @default("Available for Data Analyst & BI roles")
+  availableForWork Boolean  @default(true)
+  cvUrl            String   @default("/uploads/Chamoth_Bandara_CV.pdf")
+  githubUrl        String   @default("https://github.com")
+  linkedinUrl      String   @default("https://linkedin.com")
+  updatedAt        DateTime @updatedAt
+}
+
+model ProfilePhoto {
+  id        String   @id @default(cuid())
+  url       String
+  altText   String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Skill {
+  id        String   @id @default(cuid())
+  name      String
+  category  String   // "BI & Reporting", "SQL & Databases", "Programming & Analytics", "Statistics", "Data Foundations"
+  icon      String?
+  order     Int      @default(0)
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Experience {
+  id             String   @id @default(cuid())
+  title          String
+  company        String
+  companyUrl     String?
+  location       String
+  startDate      String
+  endDate        String
+  current        Boolean  @default(false)
+  responsibilities String // Stored as JSON string or multi-line text
+  technologies   String   @default("")
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Project {
+  id                 String   @id @default(cuid())
+  slug               String   @unique
+  title              String
+  shortDescription   String
+  fullDescription    String
+  category           String   // "Power BI", "Power Platform", "Full-Stack", "Research & Statistics"
+  technologies       String   // Comma-separated or JSON string
+  problemStatement   String?
+  objectives         String?
+  contribution       String?
+  developmentProcess String?
+  keyFeatures        String?
+  outcomes           String?
+  thumbnailUrl       String?
+  images             String?  // JSON string array of image URLs
+  githubUrl          String?
+  liveDemoUrl        String?
+  featured           Boolean  @default(true)
+  published          Boolean  @default(true)
+  order              Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Education {
+  id             String   @id @default(cuid())
+  degree         String
+  institution    String
+  institutionUrl String?
+  location       String?
+  startYear      String
+  endYear        String
+  description    String?
+  grade          String?
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Certification {
+  id            String   @id @default(cuid())
+  title         String
+  issuer        String
+  issueDate     String
+  expiryDate    String?
+  credentialUrl String?
+  imageUrl      String?
+  pdfUrl        String?
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Leadership {
+  id           String   @id @default(cuid())
+  role         String
+  organization String
+  period       String
+  description  String
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Reference {
+  id           String   @id @default(cuid())
+  name         String
+  title        String
+  organization String
+  email        String?
+  phone        String?
+  visible      Boolean  @default(true)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model SiteSetting {
+  id               String   @id @default("site_settings")
+  siteTitle        String   @default("Chamoth Bandara | Junior Data Analyst & BI Developer")
+  metaDescription  String   @default("Portfolio of Chamoth Bandara - Junior Data Analyst and Power BI Developer specializing in transforming data into actionable insights.")
+  heroHeadline     String   @default("Transforming Data Into Meaningful Insights and Smarter Decisions.")
+  heroSubheadline  String   @default("Statistics and Computer Science graduate with practical experience in developing interactive Power BI dashboards, automating business intelligence reporting, analyzing operational performance, and transforming complex datasets into actionable insights.")
+  showReferences   Boolean  @default(true)
+  showLeadership   Boolean  @default(true)
+  showContactInfo  Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+}

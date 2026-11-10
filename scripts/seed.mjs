@@ -1,0 +1,491 @@
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log("🌱 Starting Chamoth Bandara portfolio database seeding...");
+
+  // 1. Admin User
+  const adminEmail = process.env.ADMIN_EMAIL || "pamithabandara123@gmail.com";
+  const rawPassword = process.env.ADMIN_PASSWORD || "AdminPassword2026!";
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(rawPassword, salt);
+
+  const admin = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      passwordHash,
+      name: "Chamoth Bandara",
+    },
+    create: {
+      email: adminEmail,
+      passwordHash,
+      name: "Chamoth Bandara",
+    },
+  });
+  console.log(`✅ Admin user seeded: ${admin.email}`);
+
+  // 2. Profile
+  const profile = await prisma.profile.upsert({
+    where: { id: "main_profile" },
+    update: {
+      fullName: "Chamoth Bandara",
+      title: "Junior Data Analyst | Power BI Developer | Data Analytics Enthusiast",
+      headline: "Transforming Data Into Meaningful Insights and Smarter Decisions.",
+      bio: "Passionate about bridging complex operational data and executive decision-making. With a rigorous background in Statistics and Computer Science from the University of Kelaniya and direct industry experience at MAS Fabrics – Matrix, I specialize in designing scalable Power BI data models, automating business intelligence pipelines, formulating precision DAX measures, and extracting actionable intelligence from messy operational datasets.",
+      summary: "Data Analyst with a BSc in Statistics & Computer Science and practical experience turning operational data into reliable KPIs, dashboards, and decision-support insights. Currently working as a Data Analyst Intern at MAS Fabrics, developing Power BI solutions with Power Query and DAX, analyzing quality and operational trends, improving data models, and investigating data inconsistencies. Experience spans quality, inspection, laboratory, supplier, and audit analytics, with a strong foundation in SQL, statistical analysis, R and Python. Interested in applying analytics to healthcare operations, member outcomes, and data-driven decision-making.",
+      avatarUrl: "/uploads/chamoth_profile.jpg",
+      email: "pamithabandara123@gmail.com",
+      phone: "+94 71 929 9354",
+      location: "Thulhiriya / Colombo, Sri Lanka",
+      availability: "Available for Data Analyst & BI roles",
+      availableForWork: true,
+      cvUrl: "/uploads/Chamoth_Bandara_CV.pdf",
+      githubUrl: "https://github.com",
+      linkedinUrl: "https://linkedin.com",
+    },
+    create: {
+      id: "main_profile",
+      fullName: "Chamoth Bandara",
+      title: "Junior Data Analyst | Power BI Developer | Data Analytics Enthusiast",
+      headline: "Transforming Data Into Meaningful Insights and Smarter Decisions.",
+      bio: "Passionate about bridging complex operational data and executive decision-making. With a rigorous background in Statistics and Computer Science from the University of Kelaniya and direct industry experience at MAS Fabrics – Matrix, I specialize in designing scalable Power BI data models, automating business intelligence pipelines, formulating precision DAX measures, and extracting actionable intelligence from messy operational datasets.",
+      summary: "Data Analyst with a BSc in Statistics & Computer Science and practical experience turning operational data into reliable KPIs, dashboards, and decision-support insights. Currently working as a Data Analyst Intern at MAS Fabrics, developing Power BI solutions with Power Query and DAX, analyzing quality and operational trends, improving data models, and investigating data inconsistencies. Experience spans quality, inspection, laboratory, supplier, and audit analytics, with a strong foundation in SQL, statistical analysis, R and Python. Interested in applying analytics to healthcare operations, member outcomes, and data-driven decision-making.",
+      avatarUrl: "/uploads/chamoth_profile.jpg",
+      email: "pamithabandara123@gmail.com",
+      phone: "+94 71 929 9354",
+      location: "Thulhiriya / Colombo, Sri Lanka",
+      availability: "Available for Data Analyst & BI roles",
+      availableForWork: true,
+      cvUrl: "/uploads/Chamoth_Bandara_CV.pdf",
+      githubUrl: "https://github.com",
+      linkedinUrl: "https://linkedin.com",
+    },
+  });
+  console.log(`✅ Profile seeded: ${profile.fullName}`);
+
+  // 3. Profile Photos
+  await prisma.profilePhoto.deleteMany();
+  await prisma.profilePhoto.create({
+    data: {
+      url: "/uploads/chamoth_profile.jpg",
+      altText: "Chamoth Bandara - Professional Portrait",
+      isPrimary: true,
+    },
+  });
+  console.log(`✅ Profile photo seeded`);
+
+  // 4. Skills
+  await prisma.skill.deleteMany();
+  const skillsData = [
+    // BI & Reporting
+    { name: "Power BI", category: "BI & Reporting", icon: "BarChart3", order: 1, featured: true },
+    { name: "Power Query", category: "BI & Reporting", icon: "Workflow", order: 2, featured: true },
+    { name: "DAX (Data Analysis Expressions)", category: "BI & Reporting", icon: "Calculator", order: 3, featured: true },
+    { name: "KPI Reporting", category: "BI & Reporting", icon: "TrendingUp", order: 4, featured: true },
+    { name: "Dashboard Development", category: "BI & Reporting", icon: "LayoutDashboard", order: 5, featured: true },
+    { name: "Data Visualization", category: "BI & Reporting", icon: "PieChart", order: 6, featured: false },
+
+    // SQL & Databases
+    { name: "SQL", category: "SQL & Databases", icon: "Database", order: 7, featured: true },
+    { name: "Microsoft SQL Server", category: "SQL & Databases", icon: "Server", order: 8, featured: true },
+    { name: "MySQL", category: "SQL & Databases", icon: "HardDrive", order: 9, featured: false },
+    { name: "MongoDB", category: "SQL & Databases", icon: "Layers", order: 10, featured: false },
+
+    // Programming & Analytics
+    { name: "Python", category: "Programming & Analytics", icon: "Code2", order: 11, featured: true },
+    { name: "Pandas & NumPy", category: "Programming & Analytics", icon: "Binary", order: 12, featured: true },
+    { name: "Scikit-learn", category: "Programming & Analytics", icon: "Cpu", order: 13, featured: false },
+    { name: "R", category: "Programming & Analytics", icon: "LineChart", order: 14, featured: true },
+    { name: "Java", category: "Programming & Analytics", icon: "Coffee", order: 15, featured: false },
+    { name: "C#", category: "Programming & Analytics", icon: "Terminal", order: 16, featured: false },
+    { name: "JavaScript", category: "Programming & Analytics", icon: "FileCode", order: 17, featured: false },
+
+    // Statistics
+    { name: "Descriptive Statistics", category: "Statistics", icon: "Percent", order: 18, featured: true },
+    { name: "Survey Analysis", category: "Statistics", icon: "ClipboardList", order: 19, featured: false },
+    { name: "Statistical Modeling", category: "Statistics", icon: "Activity", order: 20, featured: true },
+    { name: "Data Preprocessing", category: "Statistics", icon: "Filter", order: 21, featured: true },
+    { name: "Trend Analysis", category: "Statistics", icon: "GitCommit", order: 22, featured: false },
+
+    // Data Foundations
+    { name: "Data Modeling", category: "Data Foundations", icon: "Network", order: 23, featured: true },
+    { name: "Data Quality", category: "Data Foundations", icon: "CheckCircle2", order: 24, featured: true },
+    { name: "Git & Version Control", category: "Data Foundations", icon: "GitBranch", order: 25, featured: false },
+    { name: "GitHub", category: "Data Foundations", icon: "Github", order: 26, featured: false },
+    { name: "REST APIs", category: "Data Foundations", icon: "Radio", order: 27, featured: false },
+  ];
+
+  for (const s of skillsData) {
+    await prisma.skill.create({ data: s });
+  }
+  console.log(`✅ Seeded ${skillsData.length} skills`);
+
+  // 5. Experience
+  await prisma.experience.deleteMany();
+  const experiencesData = [
+    {
+      title: "Data Analyst Intern",
+      company: "MAS Fabrics – Matrix",
+      companyUrl: "https://www.masholdings.com",
+      location: "Thulhiriya, Sri Lanka",
+      startDate: "Mar 2026",
+      endDate: "Sep 2026",
+      current: true,
+      technologies: "Power BI, Power Query, DAX, SQL, Data Modeling, KPI Reporting, Lean Operations",
+      responsibilities: JSON.stringify([
+        "Develop and maintain interactive Power BI dashboards using Power Query and DAX to monitor plant quality and operational performance.",
+        "Automate KPI reporting for FTT (First Time Through), rejection, rework, defects, turnaround time, supplier performance, and target-vs-actual results.",
+        "Analyze trends and drill down by model, process, defect category, supplier, and time period to identify performance gaps and improvement opportunities.",
+        "Integrate fragmented quality and inspection data into structured reporting models; improve consistency, reduce manual analysis, and strengthen management visibility.",
+        "Investigate data inconsistencies and duplication and optimize DAX-based KPI logic and data models to improve reporting accuracy.",
+        "Translate operational reporting needs into dashboards and decision-support tools and work with quality stakeholders to support Lean improvement initiatives.",
+      ]),
+      order: 1,
+    },
+  ];
+
+  for (const exp of experiencesData) {
+    await prisma.experience.create({ data: exp });
+  }
+  console.log(`✅ Seeded experience`);
+
+  // 6. Projects
+  await prisma.project.deleteMany();
+  const projectsData = [
+    {
+      slug: "drive-lean-plant-quality-ftt-dashboard",
+      title: "Drive Lean Plant Quality – FTT & Quality Performance Dashboard",
+      category: "Power BI & Dashboards",
+      technologies: "Power BI, Power Query, DAX, Plant Operations, KPI Automation",
+      shortDescription: "Plant-level quality analytics dashboard covering RM, KN, BA, Washing, and Sewing processes with automated FTT, rework, and defect KPIs.",
+      fullDescription: "A comprehensive production-grade quality monitoring system engineered for MAS Fabrics – Matrix. It unifies operations across multiple manufacturing departments to calculate real-time First Time Through (FTT) metrics, defect distributions, and target variances.",
+      problemStatement: "Plant managers and quality leads operated with delayed, manual spreadsheet reports across separate departments (Raw Material, Knitting, Bonding/Assembly, Washing, Sewing), creating communication lag and delayed response to line quality spikes.",
+      objectives: "Centralize manufacturing quality metrics into an automated dashboard, provide drill-downs across models, processes, defect categories, and shifts, and empower plant leadership with actionable target-vs-actual tracking.",
+      contribution: "Architected the dimensional data model, engineered DAX measures for weighted FTT and defect rates, created automated Power Query transformation workflows, and designed an intuitive executive-to-shopfloor UI.",
+      developmentProcess: "1. Mapped process flow across RM, KN, BA, Washing, and Sewing.\n2. Built standardized ETL workflows in Power Query.\n3. Formulated optimized DAX KPI measures.\n4. Conducted user acceptance testing with plant floor supervisors and QA managers.",
+      keyFeatures: "• Multi-process coverage across RM, KN, BA, Washing, and Sewing\n• Dynamic target-vs-actual variance tracking\n• Granular drill-down by garment model, defect type, and timeline\n• Automated daily KPI refreshes eliminating manual reporting",
+      outcomes: "Eliminated manual daily report compilation, provided immediate visibility into defect hotspots, and supported Lean continuous improvement initiatives across the plant.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: true,
+      published: true,
+      order: 1,
+    },
+    {
+      slug: "integrated-plant-quality-inspection-analytics",
+      title: "Integrated Plant Quality & Inspection Analytics",
+      category: "Power BI & Dashboards",
+      technologies: "Power BI, Power Query, DAX, Statistical Quality Control, Data Integration",
+      shortDescription: "Integrated Line-End AQL, Final Internal, and 3rd-Party Inspection data to analyze defect trends, TM/QC performance, and customer quality standards.",
+      fullDescription: "An enterprise-grade cross-stage quality correlation platform consolidating Line-End Acceptable Quality Limit (AQL), Final Internal QA checks, and external third-party customer audits into a unified analytics model.",
+      problemStatement: "Inspection records were stored in isolated silos, causing discrepancy in defect classifications, duplicate data entry, and inability to correlate internal QC findings with external customer audit outcomes.",
+      objectives: "Harmonize disparate inspection datasets into a single source of truth, quantify inspection team consistency, and uncover root causes of audit variances.",
+      contribution: "Integrated heterogeneous datasets using advanced Power Query pipelines, eliminated data duplication, optimized DAX calculation performance, and designed analytical views for QA managers.",
+      developmentProcess: "1. Dataset normalization and cross-system schema alignment.\n2. Building relational Star Schema in Power BI.\n3. Creating cross-stage defect correlation algorithms.\n4. Validating output against physical audit logs.",
+      keyFeatures: "• Line-End AQL vs. Final Internal vs. 3rd-Party correlation\n• Inspector (TM/QC) performance consistency tracking\n• Customer-specific quality standard compliance scoring\n• Root cause pareto analysis for top recurring defects",
+      outcomes: "Strengthened management visibility, eliminated reporting duplication, and improved data model accuracy across multiple inspection checkpoints.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: true,
+      published: true,
+      order: 2,
+    },
+    {
+      slug: "lab-performance-analytics-dashboard",
+      title: "Lab Performance Analytics Dashboard",
+      category: "Power BI & Dashboards",
+      technologies: "Power BI, Power Query, DAX, Laboratory Operations, SLA Tracking",
+      shortDescription: "Interactive laboratory dashboard tracking turnaround time (TAT), consignment releases, tester throughput, defect classifications, and quality trends.",
+      fullDescription: "An operational analytics system for fabric testing laboratories designed to monitor sample lifecycles from intake to sign-off, evaluate tester productivity, and prevent delivery delays.",
+      problemStatement: "Laboratory management lacked transparent tracking of testing queues, resulting in consignment release bottlenecks and difficulty identifying tester capacity constraints.",
+      objectives: "Automate lab KPI calculations, track Turnaround Time against strict production SLAs, and provide transparent consignment status updates to production coordinators.",
+      contribution: "Transformed and normalized testing logs, built automated DAX calculations for turnaround percentiles and SLA compliance rates, and delivered an interactive reporting view.",
+      developmentProcess: "1. Audited laboratory log books and digital intake sheets.\n2. Formulated TAT duration measures accounting for operating hours.\n3. Created visual alert thresholds for pending consignments.\n4. Deployed interactive filter panels for laboratory supervisors.",
+      keyFeatures: "• Consignment status pipeline (Pending vs. In-Test vs. Released)\n• SLA Turnaround Time gauge and automated threshold alerts\n• Individual tester performance and throughput analytics\n• Long-term fabric test defect trend analysis",
+      outcomes: "Transformed and integrated laboratory data and automated KPI calculations to significantly reduce manual reporting effort and accelerate fabric consignment release times.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: true,
+      published: true,
+      order: 3,
+    },
+    {
+      slug: "supplier-performance-analytics-dashboard",
+      title: "Supplier Performance Analytics Dashboard",
+      category: "Power BI & Dashboards",
+      technologies: "Power BI, Power Query, DAX, Supply Chain Analytics, Vendor Rating",
+      shortDescription: "Interactive vendor evaluation system monitoring supplier quality rates, delivery punctuality, and historical performance trajectories.",
+      fullDescription: "A strategic supply chain dashboard designed to provide objective, data-driven vendor scorecards for fabric and trim suppliers, enabling proactive procurement and supplier relationship management.",
+      problemStatement: "Supplier assessments were largely anecdotal and manual, making it difficult to hold low-performing vendors accountable or reward consistent high-quality suppliers.",
+      objectives: "Automate supplier KPI scoring, combine defect incidence with delivery punctuality, and generate executive summaries for vendor negotiation and Lean supplier improvement.",
+      contribution: "Consolidated supplier delivery and rejection data streams, built dynamic vendor rating logic in DAX, and established interactive trend benchmarks.",
+      developmentProcess: "1. Centralized incoming raw material inspection logs.\n2. Formulated vendor scoring matrix based on quality and timeliness.\n3. Designed comparative benchmarking views.\n4. Conducted supplier review sessions with procurement stakeholders.",
+      keyFeatures: "• Objective Supplier Quality Scorecard\n• On-Time In-Full (OTIF) delivery metrics\n• Defect frequency ranking by supplier and fabric category\n• Longitudinal performance trend tracking",
+      outcomes: "Automated supplier KPIs and integrated supplier data to improve visibility and support supplier improvement initiatives.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: true,
+      published: true,
+      order: 4,
+    },
+    {
+      slug: "decathlon-audit-management-system",
+      title: "Decathlon Audit Management System",
+      category: "Power Platform & Automation",
+      technologies: "Power Apps, Power Automate, SharePoint, Digital Auditing, Mobile Workflow",
+      shortDescription: "End-to-end digital audit application facilitating mobile audit responses, photo evidence capture, automated report generation, and instant retrieval.",
+      fullDescription: "A purpose-built enterprise low-code application built for plant audit teams to conduct compliance inspections directly on tablet and mobile devices, eliminating physical paperwork.",
+      problemStatement: "Audit rounds were captured on paper clipboards and loose digital photos, requiring hours of manual collation, transcription into spreadsheets, and fragmented archiving.",
+      objectives: "Develop a seamless mobile-first audit workflow that enforces standardized responses, allows live photo capture, and automatically generates audit documentation.",
+      contribution: "Built the complete user experience in Power Apps, structured backend SharePoint lists, programmed Power Automate workflows for automated PDF generation, and created an Audit ID / QID lookup engine.",
+      developmentProcess: "1. Mapped Decathlon compliance checklist requirements.\n2. Designed intuitive UI in Power Apps with offline and camera integration.\n3. Built automated cloud flows in Power Automate.\n4. Tested on-site during actual factory floor audits.",
+      keyFeatures: "• Mobile-responsive digital questionnaire interface\n• Direct camera integration for evidence and defect photos\n• Automated PDF audit report creation and SharePoint document storage\n• Fast retrieval and update functionality via Audit ID and Question ID (QID)",
+      outcomes: "Dramatically streamlined the audit workflow, eliminated paper waste, and improved audit trace accuracy and compliance speed.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: false,
+      published: true,
+      order: 5,
+    },
+    {
+      slug: "knowledge-hub-resource-management",
+      title: "Knowledge Hub – Centralized Resource System",
+      category: "Power Platform & Automation",
+      technologies: "Power Apps, Power Automate, SharePoint, Document Architecture",
+      shortDescription: "Internal knowledge management portal centralizing company standard operating procedures, documentation, and training assets across categories.",
+      fullDescription: "An internal digital workspace designed to centralize company resources, standard operating procedures (SOPs), templates, and departmental guides into an indexed, searchable hub.",
+      problemStatement: "Company documentation was scattered across local personal drives, email attachments, and disorganised shared folders, making it hard for staff to find up-to-date procedures.",
+      objectives: "Create a centralized repository with intuitive categorization, fast search, and automated retrieval based on folder paths and permission levels.",
+      contribution: "Designed and implemented the Power Apps interface, connected to structured SharePoint document libraries, and configured automated resource routing using Power Automate.",
+      developmentProcess: "1. Categorized plant documentation taxonomy.\n2. Configured secure SharePoint libraries.\n3. Built Power Apps search and filter interface.\n4. Configured automated notification and retrieval flows.",
+      keyFeatures: "• Category-based and folder-path document navigation\n• Dynamic search by document title, tag, or department\n• Direct document preview and download access\n• Automated resource retrieval flows",
+      outcomes: "Centralized company resources across multiple categories, improved accessibility, and reduced time spent searching for mission-critical documentation.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: false,
+      published: true,
+      order: 6,
+    },
+    {
+      slug: "servicelink-fullstack-marketplace",
+      title: "ServiceLink – Full-Stack Service Marketplace",
+      category: "Full-Stack & Software",
+      technologies: "Java 17, Spring Boot, Spring Security, MongoDB, React, REST APIs, JWT, Git",
+      shortDescription: "Full-stack marketplace connecting customers and service providers with service listings, availability, bookings, reviews, and admin workflows.",
+      fullDescription: "A university full-stack software engineering project building a multi-tier marketplace platform connecting local consumers with verified service professionals.",
+      problemStatement: "Finding trusted local tradespeople and service providers suffered from fragmented communication, lack of transparent availability, and insecure transactions.",
+      objectives: "Architect a scalable, secure web application with role-based access control, real-time availability scheduling, and intuitive booking management.",
+      contribution: "Developed RESTful APIs with Java 17 and Spring Boot, implemented Spring Security with stateless JWT tokens, designed MongoDB schemas, and integrated React frontend routes.",
+      developmentProcess: "1. System requirement specification and entity relationship modeling.\n2. Backend REST API development and JWT security filter implementation.\n3. MongoDB document persistence configuration.\n4. React UI development with protected client-side routes.",
+      keyFeatures: "• Role-based authentication & authorization (Customer, Provider, Admin)\n• Interactive booking system with real-time schedule checks\n• Customer review and rating submission pipeline\n• Secure administrative moderation dashboard",
+      outcomes: "Successfully delivered high-performance full-stack platform following clean architecture, secure RESTful design principles, and comprehensive unit tests.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: false,
+      published: true,
+      order: 7,
+    },
+    {
+      slug: "expenditures-food-nutritional-needs-students",
+      title: "Expenditures for Food & Nutritional Needs Among Physically Active Students",
+      category: "Research & Statistics",
+      technologies: "Survey Analysis, Stratified Sampling, Descriptive Statistics, Excel, Research Methodology",
+      shortDescription: "Empirical survey-based research study evaluating weekly food spending, nutritional adequacy, and financial constraints among physically active university students.",
+      fullDescription: "An academic research study conducted at the University of Kelaniya investigating how student athletes and physically active undergraduates balance caloric and nutritional demands against student budgetary constraints.",
+      problemStatement: "Physically active students require elevated caloric and protein intakes, yet face the financial constraints of typical university students, with little empirical data on expenditure patterns in Sri Lanka.",
+      objectives: "Quantify weekly food expenditures, determine the proportion of budget allocated to nutrient-dense foods, and identify key financial obstacles to nutritional adequacy.",
+      contribution: "Formulated the comprehensive survey questionnaire, selected stratified student samples across sport disciplines, performed descriptive and inferential statistical analysis, and drafted the research findings.",
+      developmentProcess: "1. Questionnaire design and pilot testing.\n2. Stratified sampling across university athletic teams.\n3. Data sanitization and descriptive statistical computations.\n4. Synthesis of expenditure distributions and nutritional conclusions.",
+      keyFeatures: "• Stratified sampling of university active student populations\n• Food expenditure breakdowns by food category and macronutrient source\n• Statistical distribution and variance analysis\n• Policy recommendations for university dining services",
+      outcomes: "Delivered a rigorous academic research report demonstrating expenditure patterns and providing evidence-based dietary recommendations for university sports councils.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: false,
+      published: true,
+      order: 8,
+    },
+    {
+      slug: "modeling-impact-workplace-factors-employee-performance",
+      title: "Modeling the Impact of Workplace Factors on Employee Performance",
+      category: "Research & Statistics",
+      technologies: "R, Statistical Modeling, Data Preprocessing, Regression Analysis, Hypothesis Testing",
+      shortDescription: "Statistical modeling project in R evaluating the quantitative impact of workplace environment, leadership support, and workload on employee output.",
+      fullDescription: "A quantitative data analysis project in R that preprocessed organizational survey data, fitted multivariable regression models, and interpreted performance predictors to guide management decision-making.",
+      problemStatement: "Organizations frequently invest in workplace enhancements without empirical evidence regarding which factors have statistically significant correlations with actual employee productivity.",
+      objectives: "Identify the critical workplace variables influencing employee performance, evaluate multicollinearity, and formulate an interpretable predictive regression model.",
+      contribution: "Conducted data preprocessing and outlier detection in R, fitted linear regression models, analyzed diagnostic residual plots, and translated statistical findings into executive insights.",
+      developmentProcess: "1. Data cleaning, handling missing values, and normalization in R.\n2. Exploratory correlation matrix and scatterplot matrices.\n3. Model selection using stepwise regression and ANOVA.\n4. Model diagnostics: homoscedasticity, normality, and multicollinearity (VIF) checks.",
+      keyFeatures: "• Comprehensive data preprocessing pipeline in R\n• Multivariable regression modeling with significance testing\n• Model diagnostic analysis (Q-Q plots, Cook's distance, VIF)\n• Actionable rank ordering of organizational performance drivers",
+      outcomes: "Successfully isolated key workplace predictors of employee performance and communicated analytical findings with clear visual regression diagnostics.",
+      thumbnailUrl: "/uploads/chamoth_profile.jpg",
+      images: JSON.stringify(["/uploads/chamoth_profile.jpg"]),
+      featured: false,
+      published: true,
+      order: 9,
+    },
+  ];
+
+  for (const proj of projectsData) {
+    await prisma.project.create({ data: proj });
+  }
+  console.log(`✅ Seeded ${projectsData.length} projects`);
+
+  // 7. Education
+  await prisma.education.deleteMany();
+  const educationData = [
+    {
+      degree: "BSc in Statistics & Computer Science",
+      institution: "University of Kelaniya",
+      institutionUrl: "https://kln.ac.lk",
+      location: "Kelaniya, Sri Lanka",
+      startYear: "2023",
+      endYear: "2026",
+      description: "Rigorous academic curriculum covering Statistical Inference, Probability & Distribution Theory, Linear Models, Data Preprocessing, Algorithms, Database Management, Object-Oriented Programming, and Data Mining.",
+      grade: "Undergraduate (Reading for degree)",
+      order: 1,
+    },
+    {
+      degree: "Diploma in Information Technology (External)",
+      institution: "University of Colombo School of Computing (UCSC)",
+      institutionUrl: "https://ucsc.cmb.ac.lk",
+      location: "Colombo, Sri Lanka",
+      startYear: "2023",
+      endYear: "2024",
+      description: "Comprehensive technical coursework encompassing Relational Database Systems (SQL), Web Technologies, Systems Analysis and Design, and Enterprise Software Development.",
+      grade: "Successfully Completed",
+      order: 2,
+    },
+    {
+      degree: "G.C.E. Advanced Level (A/L) – Physical Science Stream",
+      institution: "St. Mary's College",
+      institutionUrl: "",
+      location: "Kegalle, Sri Lanka",
+      startYear: "2019",
+      endYear: "2021",
+      description: "Studied Higher Mathematics, Physics, and Chemistry in the Physical Science Stream. Qualified for state university admission.",
+      grade: "Physics (C), Chemistry (B), Combined Mathematics (C)",
+      order: 3,
+    },
+  ];
+
+  for (const edu of educationData) {
+    await prisma.education.create({ data: edu });
+  }
+  console.log(`✅ Seeded education`);
+
+  // 8. Certifications
+  await prisma.certification.deleteMany();
+  const certificationsData = [
+    {
+      title: "Data Science with Python (60 hours)",
+      issuer: "University of Colombo School of Computing (UCSC)",
+      issueDate: "2026",
+      credentialUrl: "https://ucsc.cmb.ac.lk",
+      imageUrl: "/uploads/chamoth_profile.jpg",
+      pdfUrl: "",
+      order: 1,
+    },
+    {
+      title: "Machine Learning for Beginners",
+      issuer: "SoloLearn",
+      issueDate: "13 January 2026",
+      credentialUrl: "https://www.sololearn.com",
+      imageUrl: "/uploads/chamoth_profile.jpg",
+      pdfUrl: "",
+      order: 2,
+    },
+    {
+      title: "Data Analytics with AI",
+      issuer: "SoloLearn",
+      issueDate: "13 January 2026",
+      credentialUrl: "https://www.sololearn.com",
+      imageUrl: "/uploads/chamoth_profile.jpg",
+      pdfUrl: "",
+      order: 3,
+    },
+  ];
+
+  for (const cert of certificationsData) {
+    await prisma.certification.create({ data: cert });
+  }
+  console.log(`✅ Seeded certifications`);
+
+  // 9. Leadership
+  await prisma.leadership.deleteMany();
+  await prisma.leadership.create({
+    data: {
+      role: "Junior Treasurer",
+      organization: "Student-Led Activities & Department Initiatives",
+      period: "2024 – 2025",
+      description: "Managed financial records, budgets, and transactions, and supported planning and execution of student initiatives, university events, and departmental activities.",
+      order: 1,
+    },
+  });
+  console.log(`✅ Seeded leadership`);
+
+  // 10. References
+  await prisma.reference.deleteMany();
+  const referencesData = [
+    {
+      name: "Chathura Yohan",
+      title: "Manager – Quality Assurance",
+      organization: "MAS Fabrics (Private) Limited",
+      email: "chathuray@masholdings.com",
+      phone: "0770473142",
+      visible: true,
+      order: 1,
+    },
+    {
+      name: "Dr. D.M.P.V. Dissanayaka",
+      title: "Senior Lecturer",
+      organization: "Department of Statistics & Computer Science, University of Kelaniya",
+      email: "pansujeed@kln.ac.lk",
+      phone: "071 202 1629",
+      visible: true,
+      order: 2,
+    },
+  ];
+
+  for (const ref of referencesData) {
+    await prisma.reference.create({ data: ref });
+  }
+  console.log(`✅ Seeded references`);
+
+  // 11. Site Setting
+  await prisma.siteSetting.upsert({
+    where: { id: "site_settings" },
+    update: {
+      siteTitle: "Chamoth Bandara | Junior Data Analyst & BI Developer",
+      metaDescription: "Professional portfolio of Chamoth Bandara – Junior Data Analyst & Power BI Developer specializing in transforming data into meaningful insights and smarter decisions.",
+      heroHeadline: "Transforming Data Into Meaningful Insights and Smarter Decisions.",
+      heroSubheadline: "Statistics and Computer Science graduate with practical experience in developing interactive Power BI dashboards, automating business intelligence reporting, analyzing operational performance, and transforming complex datasets into actionable insights.",
+      showReferences: true,
+      showLeadership: true,
+      showContactInfo: true,
+    },
+    create: {
+      id: "site_settings",
+      siteTitle: "Chamoth Bandara | Junior Data Analyst & BI Developer",
+      metaDescription: "Professional portfolio of Chamoth Bandara – Junior Data Analyst & Power BI Developer specializing in transforming data into meaningful insights and smarter decisions.",
+      heroHeadline: "Transforming Data Into Meaningful Insights and Smarter Decisions.",
+      heroSubheadline: "Statistics and Computer Science graduate with practical experience in developing interactive Power BI dashboards, automating business intelligence reporting, analyzing operational performance, and transforming complex datasets into actionable insights.",
+      showReferences: true,
+      showLeadership: true,
+      showContactInfo: true,
+    },
+  });
+  console.log(`✅ Seeded site settings`);
+
+  console.log("🎉 Chamoth Bandara portfolio database seeded successfully!");
+}
+
+main()
+  .catch((e) => {
+    console.error("❌ Seeding error:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
