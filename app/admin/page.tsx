@@ -16,30 +16,56 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
+import {
+  initialProfile,
+  initialProjects,
+  initialSkills,
+  initialExperiences,
+} from "@/lib/initialData";
 
-export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
-  const [
-    projectsCount,
-    skillsCount,
-    experienceCount,
-    unreadMessagesCount,
-    totalMessagesCount,
-    recentMessages,
-    profile,
-  ] = await Promise.all([
-    db.project.count(),
-    db.skill.count(),
-    db.experience.count(),
-    db.contactMessage.count({ where: { read: false } }),
-    db.contactMessage.count(),
-    db.contactMessage.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-    }),
-    db.profile.findUnique({ where: { id: "main_profile" } }),
-  ]);
+  let projectsCount = initialProjects.length;
+  let skillsCount = initialSkills.length;
+  let experienceCount = initialExperiences.length;
+  let unreadMessagesCount = 0;
+  let totalMessagesCount = 0;
+  let recentMessages: any[] = [];
+  let profile = initialProfile;
+
+  try {
+    const [
+      pCount,
+      sCount,
+      eCount,
+      unMsgCount,
+      totMsgCount,
+      recMsgs,
+      dbProfile,
+    ] = await Promise.all([
+      db.project.count(),
+      db.skill.count(),
+      db.experience.count(),
+      db.contactMessage.count({ where: { read: false } }),
+      db.contactMessage.count(),
+      db.contactMessage.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+      }),
+      db.profile.findUnique({ where: { id: "main_profile" } }),
+    ]);
+
+    projectsCount = pCount;
+    skillsCount = sCount;
+    experienceCount = eCount;
+    unreadMessagesCount = unMsgCount;
+    totalMessagesCount = totMsgCount;
+    recentMessages = recMsgs;
+    if (dbProfile) profile = dbProfile as any;
+  } catch (err) {
+    console.warn("DB overview fallback:", err);
+  }
 
   const stats = [
     {

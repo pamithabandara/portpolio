@@ -14,9 +14,9 @@ import {
   BarChart3,
   Layers,
   PieChart,
-  FileText,
 } from "lucide-react";
 import { db } from "@/lib/db";
+import { initialProjects, initialProfile } from "@/lib/initialData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -26,10 +26,21 @@ interface ProjectPageProps {
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: ProjectPageProps) {
-  const project = await db.project.findUnique({
-    where: { slug: params.slug },
-  });
+  let project = null;
+  try {
+    project = await db.project.findUnique({
+      where: { slug: params.slug },
+    });
+  } catch (e) {
+    project = initialProjects.find((p) => p.slug === params.slug) || null;
+  }
+
+  if (!project) {
+    project = initialProjects.find((p) => p.slug === params.slug) || null;
+  }
 
   if (!project) {
     return {
@@ -44,13 +55,23 @@ export async function generateMetadata({ params }: ProjectPageProps) {
 }
 
 export default async function ProjectDetailPage({ params }: ProjectPageProps) {
-  const project = await db.project.findUnique({
-    where: { slug: params.slug },
-  });
+  let project = null;
+  let profile = initialProfile;
 
-  const profile = await db.profile.findUnique({
-    where: { id: "main_profile" },
-  });
+  try {
+    const [dbProject, dbProfile] = await Promise.all([
+      db.project.findUnique({ where: { slug: params.slug } }),
+      db.profile.findUnique({ where: { id: "main_profile" } }),
+    ]);
+    project = dbProject;
+    if (dbProfile) profile = dbProfile as any;
+  } catch (e) {
+    console.warn("Using fallback project data:", e);
+  }
+
+  if (!project) {
+    project = initialProjects.find((p) => p.slug === params.slug) || null;
+  }
 
   if (!project) {
     notFound();
@@ -72,8 +93,8 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   return (
     <div className="min-h-screen bg-midnight-950 text-slate-100 flex flex-col">
       <Navbar
-        fullName={profile?.fullName || "Chamoth Bandara"}
-        cvUrl={profile?.cvUrl || "/uploads/Chamoth_Bandara_CV.pdf"}
+        fullName={profile.fullName}
+        cvUrl={profile.cvUrl}
       />
 
       <main className="flex-1 pt-28 pb-20">
@@ -300,7 +321,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             </Link>
 
             <a
-              href={`mailto:${profile?.email || "pamithabandara123@gmail.com"}?subject=Inquiry regarding ${encodeURIComponent(project.title)}`}
+              href={`mailto:${profile.email}?subject=Inquiry regarding ${encodeURIComponent(project.title)}`}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-midnight-900 border border-slate-800 hover:border-cyan-500/50 transition-colors"
             >
               <span>Discuss This Project</span>
@@ -311,11 +332,11 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
       </main>
 
       <Footer
-        fullName={profile?.fullName}
-        title={profile?.title}
-        email={profile?.email}
-        linkedinUrl={profile?.linkedinUrl}
-        githubUrl={profile?.githubUrl}
+        fullName={profile.fullName}
+        title={profile.title}
+        email={profile.email}
+        linkedinUrl={profile.linkedinUrl}
+        githubUrl={profile.githubUrl}
       />
     </div>
   );

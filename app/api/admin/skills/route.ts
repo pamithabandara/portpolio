@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyAdminRequest } from "@/lib/auth";
+import { initialSkills } from "@/lib/initialData";
 
 export async function GET(req: NextRequest) {
   const session = await verifyAdminRequest(req);
@@ -8,9 +9,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const skills = await db.skill.findMany({
-    orderBy: { order: "asc" },
-  });
+  let skills = initialSkills;
+  try {
+    const dbSkills = await db.skill.findMany({ orderBy: { order: "asc" } });
+    if (dbSkills && dbSkills.length > 0) skills = dbSkills as any;
+  } catch (e) {
+    console.warn("DB skills fallback:", e);
+  }
 
   return NextResponse.json({ skills });
 }

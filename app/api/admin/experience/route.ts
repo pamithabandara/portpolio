@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyAdminRequest } from "@/lib/auth";
+import { initialExperiences } from "@/lib/initialData";
 
 export async function GET(req: NextRequest) {
   const session = await verifyAdminRequest(req);
@@ -8,9 +9,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const experiences = await db.experience.findMany({
-    orderBy: { order: "asc" },
-  });
+  let experiences = initialExperiences;
+  try {
+    const dbExperiences = await db.experience.findMany({ orderBy: { order: "asc" } });
+    if (dbExperiences && dbExperiences.length > 0) experiences = dbExperiences as any;
+  } catch (e) {
+    console.warn("DB experiences fallback:", e);
+  }
 
   return NextResponse.json({ experiences });
 }
@@ -40,8 +45,8 @@ export async function POST(req: NextRequest) {
         startDate: data.startDate.trim(),
         endDate: data.endDate ? data.endDate.trim() : "Present",
         current: Boolean(data.current),
-        responsibilities: typeof data.responsibilities === "string" 
-          ? data.responsibilities 
+        responsibilities: typeof data.responsibilities === "string"
+          ? data.responsibilities
           : JSON.stringify(data.responsibilities || []),
         technologies: data.technologies || "",
         order: Number(data.order) || 0,

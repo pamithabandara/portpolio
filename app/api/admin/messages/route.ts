@@ -11,17 +11,19 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const filter = searchParams.get("filter");
 
-  let whereClause = {};
-  if (filter === "unread") {
-    whereClause = { read: false };
-  } else if (filter === "read") {
-    whereClause = { read: true };
-  }
+  let whereClause: any = {};
+  if (filter === "unread") whereClause = { read: false };
+  else if (filter === "read") whereClause = { read: true };
 
-  const messages = await db.contactMessage.findMany({
-    where: whereClause,
-    orderBy: { createdAt: "desc" },
-  });
+  let messages: any[] = [];
+  try {
+    messages = await db.contactMessage.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (e) {
+    console.warn("DB messages fallback:", e);
+  }
 
   return NextResponse.json({ messages });
 }
